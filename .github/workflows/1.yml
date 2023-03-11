@@ -1,0 +1,47 @@
+# 请修改定时任务的时间，尽量保证大家的签到时间不一样
+# 修改cron表达式和选择是否推送消息
+
+name: GLaDOS定时签到
+
+on:
+  
+  # ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓修改下面的cron表达式
+  schedule: # Actions自动运行，自动签到时间，cron表达式，不会的看README
+    - cron: "5 20 * * *" # 分 时 日 月 星期
+    
+  push:
+    branches: ["main"]
+    paths:  
+      - 'modify.txt'
+      - '.github/workflows/*'
+
+jobs:
+  GLaDOS-CheckIn:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v3
+
+      - name: 准备Python 3.10 # Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+
+      - name: 安装Python依赖
+        run: |
+          if [ -f ./GLaDOS/requirements.txt ]; then pip install -r ./GLaDOS/requirements.txt; fi
+
+      - name: 开始签到
+        env:
+          cookie: ${{ secrets.GLADOS_COOKIE }} # cookie
+          # ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+          # 默认值0(不推送消息)，可选值1(开启Server酱消息推送)
+          isServerJpush: 0
+          SendKey: ${{ secrets.SENDKEY }} # SendKey
+          # ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+          # 默认值0(不推送消息)，可选值1(开启pushplus消息推送)
+          ispushpluspush: 0
+          token: ${{ secrets.TOKEN }} # token
+        run: |
+          python ./GLaDOS/main.py
